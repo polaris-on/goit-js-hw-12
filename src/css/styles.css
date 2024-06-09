@@ -182,7 +182,7 @@ input:-webkit-autofill:focus {
   display: flex;
   flex-wrap: wrap;
   gap: 24px;
-  padding-bottom: 60px;
+  padding-bottom: 32px;
 }
 .card {
   position: relative;
@@ -260,4 +260,27 @@ input:-webkit-autofill:focus {
   .card__numbers {
     line-height: 120%;
   }
+}
+
+/* Load more button */
+.button-container {
+  text-align: center;
+}
+.load-more-hidden {
+  display: none;
+}
+.js-load-more {
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  background: #4e75ff;
+  color: #FFFFFF;
+  font-weight: 500;
+  line-height: 150%;
+  letter-spacing: 0.04em;
+
+  transition: background var(--transit);
+}
+.js-load-more:hover {
+  background: #6c8cff;
 }
