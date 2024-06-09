@@ -16,6 +16,21 @@ const loadMoreBtn = document.querySelector('.js-load-more');
 let page = 1;
 const perPage = 18;
 
+function waitForImagesToLoad() {
+  const images = gallery.querySelectorAll('img');
+  const imagePromises = Array.from(images).map(img => {
+    return new Promise((resolve, reject) => {
+      if (img.complete) {
+        resolve();
+      } else {
+        img.onload = resolve;
+        img.onerror = reject;
+      }
+    });
+  });
+  return Promise.all(imagePromises);
+}
+
 async function handleSubmit(event) {
   event.preventDefault();
   if (event.target.classList.contains('form')) {
@@ -23,10 +38,10 @@ async function handleSubmit(event) {
     page = 1;
     loader.style.display = 'block';
     loaderOverlay.style.display = 'block';
-    setTimeout(() => {
-      loader.style.display = 'none';
-      loaderOverlay.style.display = 'none';
-    }, 1000);
+    // setTimeout(() => {
+    //   loader.style.display = 'none';
+    //   loaderOverlay.style.display = 'none';
+    // }, 1000);
   }
   const searchQuery = searchForm.elements.search.value.trim();
   if (!searchQuery) {
@@ -35,15 +50,19 @@ async function handleSubmit(event) {
       message: 'Empty query',
       messageColor: '#fff',
     });
+    loader.style.display = 'none';
+    loaderOverlay.style.display = 'none';
     return;
   }
   await getImages(searchQuery, page, perPage)
-    .then(data => {
+    .then(async data => {
       const totalHints = data.totalHits;
 
       if (data.hits.length === 0) {
         gallery.innerHTML = '';
         loadMoreBtn.classList.add('load-more-hidden');
+        loader.style.display = 'none';
+        loaderOverlay.style.display = 'none';
         throw new Error(
           'Sorry, there are no images matching your search query. Please try again!'
         );
@@ -51,11 +70,16 @@ async function handleSubmit(event) {
       const markup = createMarkup(data.hits);
       gallery.insertAdjacentHTML('beforeend', markup);
       fotoGallery.refresh();
+
+      await waitForImagesToLoad();
+
       iziToast.success({
         title: 'Success',
         message: 'Images loaded successfully',
         messageColor: '#fff',
       });
+      loader.style.display = 'none';
+      loaderOverlay.style.display = 'none';
       if (page * perPage >= totalHints) {
         iziToast.success({
           title: 'Warning',
@@ -70,15 +94,13 @@ async function handleSubmit(event) {
       }
       if (event.target.classList.contains('form')) {
         return;
-      };
+      }
       let cardImg = document.querySelector('.card__img');
-      setTimeout(() => {
-        window.scrollBy({
-          top: cardImg.height * 2 + 48,
-          left: 0,
-          behavior: 'smooth',
-        });
-      }, 1000);
+      window.scrollBy({
+        top: cardImg.height * 2 + 48,
+        left: 0,
+        behavior: 'smooth',
+      });
     })
     .catch(error => {
       iziToast.error({
@@ -92,7 +114,6 @@ async function handleSubmit(event) {
     .finally(data => {
       page++;
     });
- 
 }
 searchForm.addEventListener('submit', handleSubmit);
 
